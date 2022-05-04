@@ -3,18 +3,11 @@ import { useRouter } from 'next/router'
 import Head from "next/head";
 import $ from 'jquery'; 
 import { useState } from 'react'
+import { useForm } from 'react-hook-form';
 import { prisma } from '../lib/prisma'
 import bg from '../public/Solid-Color-Backgrounds.jpg'
 
 
-
-interface Notes{
-  notes: {
-    id: string
-    title: string
-    content: string
-  }[]
-}
 
 interface FormData {
   title: string
@@ -22,34 +15,16 @@ interface FormData {
   id: string
 }
 
-export const getServerSideProps: GetServerSideProps = async () => {
-  const notes = await prisma.note.findMany({
-    orderBy: {
-      id: 'desc', 
-  },
-  take: 1,
-    select: {
-      title: true,
-    }
-  })
-
-  return {
-    props: {
-      notes
-    }
-  }
-}
-
-const Home = ({notes}: Notes) => {
-  const [form, setForm] = useState<FormData>({title: '', content: '', id: ''})
+const Home = () => {
+  //const [form, setForm] = useState<FormData>({title: '', content: '', id: ''})
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<FormData>();
 
   //const router = useRouter()
   //const refreshData = () => {
    // router.replace(router.asPath)
   //}
-
   
-  async function create(data: FormData) {
+  async function onSubmitForm(data: FormData) {
     try {
        fetch('http://localhost:3000/api/create', {
         body: JSON.stringify(data),
@@ -60,25 +35,14 @@ const Home = ({notes}: Notes) => {
       }).then(response => response.json())
     .then(data => {
       $('#show').html(data.message)
-    }).then(() => {setForm({title: '', content: '', id: ''})
-    //refreshData()
-  })
+      reset();
+    })
   } catch (error) {
       console.log(error);
     }
-    
   }
 
-  const handleSubmit = async (data: FormData) => {
-    try {
-     create(data) 
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  
-
+ 
   return (
     <div style={{
       backgroundImage: `url(${bg.src})`,
@@ -97,23 +61,35 @@ const Home = ({notes}: Notes) => {
     <div className="container-fluid">
     <div className="row"><div className="col-md-4"></div>
     <div className="col-md-4">
-    <form  onSubmit={e => {
-        e.preventDefault()
-         handleSubmit(form)
-         
-      }}>
+    <form  onSubmit={handleSubmit(onSubmitForm)} >
       <div className="form-group">
-      <input type="text" className="form-control"
-                placeholder="Title"
-                value={form.title}
-                onChange={e => setForm({...form, title: e.target.value})}
-              /></div>
+      <input
+              type="text"
+              {...register('title', { required: {
+                value: true,
+                message: 'You must enter title',
+              }, })}
+              className={`form-control ${
+                errors.title ? 'form-control is-invalid' : null
+              }`}
+              placeholder="Full name"
+            />
+           <div className="invalid-feedback">{errors?.title?.message}</div>
+            </div>
       <div className="form-group">
-      <input type="text" className="form-control"
-                 placeholder="Content"
-                 value={form.content}
-                 onChange={e => setForm({...form, content: e.target.value})}
-              />
+      <input
+              type="text"
+              {...register('content', { required: {
+                value: true,
+                message: 'You must enter content',
+              },})}
+              className={`form-control ${
+                errors.content ? 'form-control is-invalid' : null
+              }`}
+              placeholder="content"
+            />
+            <div className="invalid-feedback">{errors?.content?.message}</div>
+            
         </div>
       <button className="btn btn-primary" type="submit">Add</button>
       <br></br>
