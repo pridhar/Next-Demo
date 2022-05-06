@@ -1,3 +1,4 @@
+// regex validation
 import { GetServerSideProps } from 'next'
 import { useRouter } from 'next/router'
 import Head from "next/head";
@@ -65,10 +66,12 @@ const Home = () => {
       <div className="form-group">
       <input
               type="text"
-              {...register('title', { required: {
-                value: true,
-                message: 'You must enter title',
-              }, })}
+              {...register('title', { required: 'You must enter email', 
+              pattern: {
+                value: /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/i,
+                message: "invalid Email"
+              }
+              })}
               className={`form-control ${
                 errors.title ? 'form-control is-invalid' : null
               }`}
@@ -79,10 +82,14 @@ const Home = () => {
       <div className="form-group">
       <input
               type="text"
-              {...register('content', { required: {
-                value: true,
-                message: 'You must enter content',
-              },})}
+              {...register('content', { required: 'You must enter phone no',
+              pattern: {
+                // it will accept 10/11 digit phone no(xxxxxxxxxxxxx)/(xxxx xxx xxxx)/(xxx-xxx-xxxx)/(xxxx-xxxxxx)
+                value: /^(\d{4}[- ]?\d{3}[- ]?\d{4})|(\d{3}[- ]?\d{3}[- ]?\d{4})|(\d{4}[- ]?\d{6})$/i,
+                message: "invalid phone no"
+              }
+            
+            })}
               className={`form-control ${
                 errors.content ? 'form-control is-invalid' : null
               }`}
